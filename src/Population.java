@@ -6,6 +6,7 @@ import java.util.List;
  * Created by Trevor on 11/8/16.
  */
 public class Population<E> {
+
     ArrayList<E> members;
 
     public void setMembers(ArrayList<E> members) {
