@@ -15,9 +15,11 @@ public class ParabolaMaxFinder implements GeneticFramework {
     /* Runs the simulation with the established parameters */
     public static void main(String args[] ) {
 
-        ParabolaMaxFinder maxFinder = new ParabolaMaxFinder(100, 100, 100000);
+        ParabolaMaxFinder maxFinder = new ParabolaMaxFinder(100, 100, 100);
         for (int i = 0; i < maxFinder.getMaxGenerations(); i++) {
             maxFinder.breedPopulation();
+            System.out.print(maxFinder.findMaxFitness());
+
         }
         System.out.print(maxFinder.findMaxFitness());
     }
@@ -37,8 +39,10 @@ public class ParabolaMaxFinder implements GeneticFramework {
         for (int i = 0; i < getCarryingCapacity(); i++) {
             Float randomNumber = ((random.nextFloat() - (float) .5) * getHeatScore()) + mean;
             members.add(randomNumber);
-
         }
+
+        heatCooldown();
+
         return new Population<>(members);
     }
 
