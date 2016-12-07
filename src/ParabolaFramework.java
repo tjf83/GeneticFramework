@@ -4,7 +4,7 @@ import java.util.Random;
 /**
  * Created by Trevor on 11/8/16.
  */
-public class GeneticFramework {
+public class ParabolaFramework {
 
     private int maxGenerations;
     private float heatScore;
@@ -12,13 +12,12 @@ public class GeneticFramework {
     private Population<Float> population;
     Parabola parabola;
 
-
     /* Runs the simulation with the established parameters */
     public static void main(String args[]) {
 
         Parabola parabola = new Parabola(4, 11, 3);
 
-        GeneticFramework vertexFinder = new GeneticFramework(100, 100, 1000, parabola);
+        ParabolaFramework vertexFinder = new ParabolaFramework(100, 100, 1000, parabola);
         for (int i = 0; i < vertexFinder.getMaxGenerations(); i++) {
             vertexFinder.breedPopulation();
         }
@@ -44,7 +43,6 @@ public class GeneticFramework {
             Float randomNumber = ((random.nextFloat() - (float) .5) * getHeatScore()) + mean;
             members.add(randomNumber);
         }
-
 
         return new Population<>(members);
     }
@@ -87,7 +85,7 @@ public class GeneticFramework {
 
 
     /* Constructor for ParabolaMaxFinder */
-    public GeneticFramework(int maxGenerations, float heatScore, int carryingCapacity, Parabola parabola) {
+    public ParabolaFramework(int maxGenerations, float heatScore, int carryingCapacity, Parabola parabola) {
         setMaxGenerations(maxGenerations);
         setHeatScore(heatScore);
         setCarryingCapacity(carryingCapacity);
