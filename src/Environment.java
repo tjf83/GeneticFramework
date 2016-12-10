@@ -65,7 +65,7 @@ public class Environment {
         float weight = average(male.weight, female.weight) + heatModifier(getWeightCenter(), heatScore);
         float speed = average(male.speed, female.speed) + heatModifier(getSpeedCenter(), heatScore);
         float strength = average(male.strength, female.strength) + heatModifier(getStrengthCenter(), heatScore);
-        float intel = average(male.intelligence, female.intelligence) + heatModifier(getStrengthCenter(), heatScore);
+        float intel = average(male.intelligence, female.intelligence) + heatModifier(getIntelligenceCenter(), heatScore);
 
         Lion.FurColor furColor = randomFurColor(male.furcolor, female.furcolor);
         Lion.Gender gender = randomGender();

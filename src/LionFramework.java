@@ -19,10 +19,10 @@ public class LionFramework {
         //Input values for fur colors
 
         ArrayList furColorModifiers = new ArrayList<Float>();
-        furColorModifiers.add(.85); //Red
-        furColorModifiers.add(.8); // Black
-        furColorModifiers.add(.95); // Brown
-        furColorModifiers.add(1);  //Tawny
+        furColorModifiers.add((float) .9970); //Red
+        furColorModifiers.add((float) .9975);  // Black
+        furColorModifiers.add((float) .998); // Brown
+        furColorModifiers.add((float) 1);   //Tawny
 
         //Input values for environmental evolutionary goals
         Float bestWeight = (float) 420;
@@ -67,30 +67,30 @@ public class LionFramework {
 
         switch (lion.gender) {
             case MALE:
-                genderString = "Male";
+                genderString = "Male"; break;
             case FEMALE:
-                genderString = "Female";
+                genderString = "Female"; break;
         }
 
         String furColorString = "";
 
         switch (lion.furcolor) {
             case BLACK:
-                furColorString = "black";
-            case BROWN:;
-                furColorString = "brown";
+                furColorString = "Black"; break;
+            case BROWN:
+                furColorString = "Brown"; break;
             case RED:
-                furColorString = "red";
+                furColorString = "Red"; break;
             case TAWNY:
-                furColorString = "tawny";
+                furColorString = "Tawny"; break;
         }
 
-        String stats = String.format("Time to talk about another lion! This one is %s with the following stats;" +
-                        "\n Weight: %i" +
-                        "\n Speed: %i " +
-                        "\n Strength: %i " +
-                        "\n Intelligence: %i " +
-                        "\n Fur Color: %s",
+        String stats = String.format("\n Time to talk about another lion! This one is %s with the following stats;" +
+                        "\n Weight: %d" +
+                        "\n Running Top Speed: %d " +
+                        "\n Peak Bite Force: %d " +
+                        "\n Sociability: %d " +
+                        "\n Fur Color: %s \n",
                 genderString, weight, speed, strength, intelligence, furColorString);
 
         System.out.print(stats);
