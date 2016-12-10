@@ -20,5 +20,10 @@ public class Population<E> {
     public Population (ArrayList<E> members) {
         this.setMembers(members);
     }
+
+    public Population() {
+        ArrayList<E> members = new ArrayList<E>();
+        this.setMembers(members);
+    }
 }
 

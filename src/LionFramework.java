@@ -1,13 +1,15 @@
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Created by sahityamantravadi on 12/7/16.
  */
 public class LionFramework {
 
-    private int maxGenerations;
     private float heatScore;
     private int carryingCapacity;
+    private int breedingPoolSize;
     private Population<Lion> population;
     private Environment environment;
 
@@ -15,6 +17,7 @@ public class LionFramework {
     public static void main(String args[]) {
 
         //Input values for fur colors
+
         ArrayList furColorModifiers = new ArrayList<Float>();
         furColorModifiers.add(.85); //Red
         furColorModifiers.add(.8); // Black
@@ -29,61 +32,173 @@ public class LionFramework {
         Environment environment = new Environment(bestWeight, bestSpeed, bestStrength, bestInt, furColorModifiers);
 
         //Input Values for Simulation Parameters
+        //Heat score should start at 1 (Generally, see breed function in environment)
         int maxGenerations = 20;
-        float heatScore = (float) 50;
+        float heatScore = (float) 1;
         int carryingCapacity = 100;
+        int breedingPopulation = 20;
 
-        LionFramework lionFramework = new LionFramework(maxGenerations, heatScore, carryingCapacity, environment);
+        LionFramework lionFramework = new LionFramework(heatScore, carryingCapacity,
+                breedingPopulation, environment);
 
+        //Run the simulation (Repeatedly breed population and reduce heat)
+        for (int i = 0; i < maxGenerations; i++) {
+            lionFramework.breedPopulation();
+            lionFramework.heatCooldown();
+        }
+
+        Population<Lion> finalPopulation = lionFramework.getPopulation();
+
+        for (int i = 0; i < 10; i++) {
+            lionFramework.printLion(finalPopulation.getMembers().get(i));
+        }
+
+    }
+
+    //Prints a lion to the terminal
+    public void printLion(Lion lion) {
+
+        int weight = (int) Math.floor((double) lion.weight);
+        int speed = (int) Math.floor((double) lion.speed);
+        int strength = (int) Math.floor((double) lion.strength);
+        int intelligence = (int) Math.floor((double) lion.intelligence);
+
+        String genderString = "";
+
+        switch (lion.gender) {
+            case MALE:
+                genderString = "Male";
+            case FEMALE:
+                genderString = "Female";
+        }
+
+        String furColorString = "";
+
+        switch (lion.furcolor) {
+            case BLACK:
+                furColorString = "black";
+            case BROWN:;
+                furColorString = "brown";
+            case RED:
+                furColorString = "red";
+            case TAWNY:
+                furColorString = "tawny";
+        }
+
+        String stats = String.format("Time to talk about another lion! This one is %s with the following stats;" +
+                        "\n Weight: %i" +
+                        "\n Speed: %i " +
+                        "\n Strength: %i " +
+                        "\n Intelligence: %i " +
+                        "\n Fur Color: %s",
+                genderString, weight, speed, strength, intelligence, furColorString);
+
+        System.out.print(stats);
     }
 
     /* Takes in an existing population and generates a new generation */
     public void breedPopulation() {
-        setPopulation(generatePopulation(findMaxFitness()));
-        heatCooldown();
+
+        //Step 1. Evaluate all Fitness, choose N best lions
+       Population<Lion> lionBreedingPopulation = generateBreedingPopulation();
+
+        //Step 2. Breed lions back to carrying capacity
+        Population<Lion> newPopulation = restoreToCarryingCapacity(lionBreedingPopulation);
+
+        //Set population as new population
+        setPopulation(newPopulation);
     }
 
-    /* Takes in a population mean and range and returns a new population
-     * Helper function for breedPopulation */
-    private Population<Lion> generatePopulation(Environment environment) {
+    /* Creates the breeding population by selecting all max fitness individuals */
+    private Population<Lion> generateBreedingPopulation() {
+
+        //Step 1. Evaluate all Fitness, choose N best lions
+        ArrayList<Float> fitnessScores = evaluateFitness();
+
+        Population<Lion> lionsTryingToMate = getPopulation();
+        Population<Lion> lionBreedingPool = new Population<>();
+        while (lionBreedingPool.getMembers().size() < getBreedingPoolSize()) {
+
+            //Track max fitness individual and where it is
+            float maxFitness = fitnessScores.get(0);
+            int index = 0;
+
+            for (int j = 0; j < fitnessScores.size(); j++) {
+                if (fitnessScores.get(j) > maxFitness) {
+                    maxFitness = fitnessScores.get(j);
+                    index = j;
+                }
+            }
+
+            //Add individual to breeding pool
+            Lion nextFittestLion = lionsTryingToMate.getMembers().get(index);
+            lionBreedingPool.getMembers().add(nextFittestLion);
+
+            //Remove from lists for future iterations
+            lionsTryingToMate.getMembers().remove(index);
+            fitnessScores.remove(index);
+        }
+
+        return lionBreedingPool;
+    }
+
+    /* Generates a randomized lion population using the environment's generation function */
+    private Population<Lion> generateInitialPopulation() {
 
         ArrayList<Lion> members = new ArrayList<>();
-
         for (int i = 0; i < getCarryingCapacity(); i++) {
-            members.add(environment.generateNewLion());
+            members.add(getEnvironment().generateNewLion());
         }
 
         return new Population<>(members);
     }
 
-    /* Returns the individual with the highest fitness */
-    private Float findMaxFitness() {
+    /* Takes in a breeeding population and randomly mates lions until carrying capacity */
+    private Population<Lion> restoreToCarryingCapacity(Population<Lion> breedingPopulation) {
 
-        ArrayList<Float> fitnessScore = evaluateFitness(getPopulation());
+        Random rn = new Random();
+        Population<Lion> nextGeneration = new Population<>();
 
-        float maxFitness = fitnessScore.get(0);
-        float value = getPopulation().getMembers().get(0);
+        //Randomly choose two lions, make them breed and add to the pool
+        for (int i = 0; i < carryingCapacity; i++) {
+            int maleLionIndex = (int) Math.floor(rn.nextDouble() * breedingPopulation.getMembers().size());
+            Lion maleLion = breedingPopulation.getMembers().get(maleLionIndex);
 
-        for (int i = 1; i < getCarryingCapacity(); i++) {
-            if (fitnessScore.get(i) > maxFitness) {
-                maxFitness = fitnessScore.get(i);
-                value = getPopulation().getMembers().get(i);
+            while (maleLion.gender != Lion.Gender.MALE) {
+                maleLionIndex = (int) Math.floor(rn.nextDouble() * breedingPopulation.getMembers().size());
+                maleLion = breedingPopulation.getMembers().get(maleLionIndex);
+
             }
+
+            int femaleLionIndex = (int) Math.floor(rn.nextDouble() * breedingPopulation.getMembers().size());
+            Lion femaleLion = breedingPopulation.getMembers().get(femaleLionIndex);
+
+            //No lion self love (Can be used to control Gender as well)
+            while ((maleLion.gender == femaleLion.gender)){
+
+                femaleLionIndex = (int) Math.floor(rn.nextDouble() * breedingPopulation.getMembers().size());
+                femaleLion = breedingPopulation.getMembers().get(femaleLionIndex);
+            }
+
+            Lion babyLion = getEnvironment().breedLions(maleLion, femaleLion, getHeatScore());
+
+            nextGeneration.getMembers().add(babyLion);
         }
 
-        return value;
+        return nextGeneration;
     }
 
-    /* Fitness evaluation function. Returns an arraylist with all fitness scores.
-       Contains logic determining parabola being analyzed
-     * Helper function for findMaxFitness */
+    /* Fitness evaluation function. Returns an arraylist with all fitness scores. */
     public ArrayList<Float> evaluateFitness() {
         ArrayList<Float> fitnessScore = new ArrayList<>();
 
         for (int i = 0; i < getCarryingCapacity(); i++) {
-            float score = getEnvironment().evaluateFitness(getPopulation().getMembers().get(i));
-            fitnessScore.add(score);
+
+            Lion lion = getPopulation().getMembers().get(i);
+            float fitness = getEnvironment().evaluateFitness(lion);
+            fitnessScore.add(fitness);
         }
+
         return fitnessScore;
     }
 
@@ -94,16 +209,18 @@ public class LionFramework {
 
 
     /* Constructor for LionFramework */
-    public LionFramework(int maxGenerations, float heatScore, int carryingCapacity, Environment environment) {
-        setMaxGenerations(maxGenerations);
+    public LionFramework(float heatScore, int carryingCapacity,
+                         int breedingPopulation, Environment environment) {
+
         setHeatScore(heatScore);
         setCarryingCapacity(carryingCapacity);
+        setBreedingPoolSize(breedingPopulation);
         setEnvironment(environment);
-        setPopulation(generatePopulation(environment));
+
+        //Generates the Initial Population for the simulation
+        setPopulation(generateInitialPopulation());
     }
 
-
-    /*Getter and Setter methods for ParabolaMaxFinder*/
 
     private void setEnvironment(Environment environment) {
         this.environment = environment;
@@ -111,14 +228,6 @@ public class LionFramework {
 
     private Environment getEnvironment() {
         return environment;
-    }
-
-    private int getMaxGenerations() {
-        return this.maxGenerations;
-    }
-
-    private void setMaxGenerations(int maxGenerations) {
-        this.maxGenerations = maxGenerations;
     }
 
     private float getHeatScore() {
@@ -131,6 +240,14 @@ public class LionFramework {
 
     private int getCarryingCapacity() {
         return this.carryingCapacity;
+    }
+
+    private void setBreedingPoolSize(int breedingPoolSize) {
+        this.breedingPoolSize = breedingPoolSize;
+    }
+
+    private int getBreedingPoolSize() {
+        return this.breedingPoolSize;
     }
 
     private void setCarryingCapacity(int carryingCapacity) {
