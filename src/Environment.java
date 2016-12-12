@@ -61,16 +61,33 @@ public class Environment {
 
     public Lion breedLions(Lion male, Lion female, float heatScore) {
 
+        //To not do randomPortion, use Average function
+        float weight = randomPortion(male.weight, female.weight) + heatModifier(getWeightCenter(), heatScore);
+        float speed = randomPortion(male.speed, female.speed) + heatModifier(getSpeedCenter(), heatScore);
+        float strength = randomPortion(male.strength, female.strength) + heatModifier(getStrengthCenter(), heatScore);
+        float intel = randomPortion(male.intelligence, female.intelligence) + heatModifier(getIntelligenceCenter(), heatScore);
 
+        /*
         float weight = average(male.weight, female.weight) + heatModifier(getWeightCenter(), heatScore);
         float speed = average(male.speed, female.speed) + heatModifier(getSpeedCenter(), heatScore);
         float strength = average(male.strength, female.strength) + heatModifier(getStrengthCenter(), heatScore);
         float intel = average(male.intelligence, female.intelligence) + heatModifier(getIntelligenceCenter(), heatScore);
+        */
 
         Lion.FurColor furColor = randomFurColor(male.furcolor, female.furcolor);
         Lion.Gender gender = randomGender();
 
         return new Lion(weight, speed, strength, intel, furColor, gender);
+
+    }
+
+    public float randomPortion(float weight1, float weight2) {
+        Random rn = new Random();
+        float mod = rn.nextFloat();
+
+        float weight = ((mod*weight1) + ((1-mod) * weight2));
+
+        return weight;
 
     }
 
@@ -119,7 +136,6 @@ public class Environment {
     Lion.FurColor randomFurColor(Lion.FurColor a, Lion.FurColor b) {
 
         Random rn = new Random();
-
         Float guess = 2 * rn.nextFloat();
 
         if (guess < 1) {

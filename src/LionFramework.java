@@ -1,3 +1,5 @@
+import com.sun.tools.doclint.Env;
+
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -10,13 +12,49 @@ public class LionFramework {
     private float heatScore;
     private int carryingCapacity;
     private int breedingPoolSize;
+
+    private int maxGenerations;
     private Population<Lion> population;
     private Environment environment;
 
     /* Runs the simulation with the established parameters */
     public static void main(String args[]) {
 
-        //Input values for fur colors
+        /*
+         *A couple of ideas to possibly try...
+         * 1. Make a male with suboptimal fur color w/ perfect fitness. See effect on fur color distribution
+         *      ->Done in generateInitialPopulation*
+         * 2. Implement Prides to show different effect of males on spread of sub-optimal colors
+         *      ->The thinking here being if 1 male mates w/ 5 females, his genes will go farther
+         *      ->Done in breeding step
+         * 3. Possibly add a second fur-color-like trait. See how that affects it
+         *      -> Could end up being "too much data"
+         * 4.  ???
+         */
+
+
+        //Generates environment. Manipulate parameters inside function
+        Environment environment = setupEnvironment();
+
+        //Input Values for Simulation Parameters
+        LionFramework lionFramework = setupLionFramework(environment);
+
+        //Run the simulation (Repeatedly breed population and reduce heat)
+        for (int i = 0; i < lionFramework.getMaxGenerations(); i++) {
+            lionFramework.breedPopulation();
+            lionFramework.heatCooldown();
+        }
+
+        Population<Lion> finalPopulation = lionFramework.getPopulation();
+
+        for (int i = 0; i < 10; i++) {
+            lionFramework.printLion(finalPopulation.getMembers().get(i));
+        }
+
+    }
+
+    //Static helper setup function for Environment
+    public static Environment setupEnvironment() {
 
         ArrayList furColorModifiers = new ArrayList<Float>();
         furColorModifiers.add((float) .9970); //Red
@@ -29,30 +67,19 @@ public class LionFramework {
         Float bestSpeed = (float) 50;
         Float bestStrength = (float) 650;
         Float bestInt = (float) 100;
-        Environment environment = new Environment(bestWeight, bestSpeed, bestStrength, bestInt, furColorModifiers);
+        return new Environment(bestWeight, bestSpeed, bestStrength, bestInt, furColorModifiers);
+    }
 
-        //Input Values for Simulation Parameters
+    //Static helper setup function for LionFramework
+    public  static LionFramework setupLionFramework(Environment environment) {
+
         //Heat score should start at 1 (Generally, see breed function in environment)
         int maxGenerations = 20;
         float heatScore = (float) 1;
         int carryingCapacity = 100;
         int breedingPopulation = 20;
 
-        LionFramework lionFramework = new LionFramework(heatScore, carryingCapacity,
-                breedingPopulation, environment);
-
-        //Run the simulation (Repeatedly breed population and reduce heat)
-        for (int i = 0; i < maxGenerations; i++) {
-            lionFramework.breedPopulation();
-            lionFramework.heatCooldown();
-        }
-
-        Population<Lion> finalPopulation = lionFramework.getPopulation();
-
-        for (int i = 0; i < 10; i++) {
-            lionFramework.printLion(finalPopulation.getMembers().get(i));
-        }
-
+        return new LionFramework(maxGenerations, heatScore, carryingCapacity, breedingPopulation, environment);
     }
 
     //Prints a lion to the terminal
@@ -146,7 +173,13 @@ public class LionFramework {
     private Population<Lion> generateInitialPopulation() {
 
         ArrayList<Lion> members = new ArrayList<>();
-        for (int i = 0; i < getCarryingCapacity(); i++) {
+
+        //Perfect fitness male lion
+        Lion perfectLion = new Lion(420, 50, 650, 100, Lion.FurColor.TAWNY, Lion.Gender.MALE);
+
+        members.add(perfectLion);
+
+        while (members.size() < getCarryingCapacity()) {
             members.add(getEnvironment().generateNewLion());
         }
 
@@ -209,12 +242,13 @@ public class LionFramework {
 
 
     /* Constructor for LionFramework */
-    public LionFramework(float heatScore, int carryingCapacity,
+    public LionFramework(int maxGenerations, float heatScore, int carryingCapacity,
                          int breedingPopulation, Environment environment) {
 
         setHeatScore(heatScore);
         setCarryingCapacity(carryingCapacity);
         setBreedingPoolSize(breedingPopulation);
+        setMaxGenerations(maxGenerations);
         setEnvironment(environment);
 
         //Generates the Initial Population for the simulation
@@ -253,6 +287,16 @@ public class LionFramework {
     private void setCarryingCapacity(int carryingCapacity) {
         this.carryingCapacity = carryingCapacity;
     }
+
+
+    public int getMaxGenerations() {
+        return maxGenerations;
+    }
+
+    public void setMaxGenerations(int maxGenerations) {
+        this.maxGenerations = maxGenerations;
+    }
+
 
     private Population<Lion> getPopulation() {
         return this.population;

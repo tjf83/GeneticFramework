@@ -19,7 +19,6 @@ public class Lion {
     FurColor furcolor;
     Gender gender;
 
-
     public Lion (float weight, float speed, float strength, float intelligence, FurColor furcolor, Gender gender) {
         this.weight = weight;
         this.speed = speed;
@@ -28,5 +27,4 @@ public class Lion {
         this.furcolor = furcolor;
         this.gender = gender;
     }
-
 }
