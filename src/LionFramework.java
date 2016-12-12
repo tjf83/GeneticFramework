@@ -1,5 +1,6 @@
 import com.sun.tools.doclint.Env;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Random;
@@ -39,14 +40,31 @@ public class LionFramework {
         //Input Values for Simulation Parameters
         LionFramework lionFramework = setupLionFramework(environment);
 
+        String csvString = "";
+
         //Run the simulation (Repeatedly breed population and reduce heat)
         for (int i = 0; i < lionFramework.getMaxGenerations(); i++) {
             lionFramework.breedPopulation();
+
+            //Write as CSV object
+            String newPopCsv = lionFramework.writePopulationAsCsv(lionFramework.getPopulation(), i);
+            csvString += newPopCsv;
+
             lionFramework.heatCooldown();
         }
 
-        Population<Lion> finalPopulation = lionFramework.getPopulation();
+        String fileName = "file.txt";
 
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+            out.write(csvString);
+            out.close();
+        }
+        catch (IOException e) {
+        }
+
+
+        Population<Lion> finalPopulation = lionFramework.getPopulation();
         for (int i = 0; i < 10; i++) {
             lionFramework.printLion(finalPopulation.getMembers().get(i));
         }
@@ -121,6 +139,69 @@ public class LionFramework {
                 genderString, weight, speed, strength, intelligence, furColorString);
 
         System.out.print(stats);
+    }
+
+    //Writes a Lion as a CSV object
+    public String writePopulationAsCsv(Population<Lion> population, int generation) {
+
+        String nextCsv = "";
+        for (int i = 0; i < population.getMembers().size(); i++) {
+            nextCsv += writeLionAsCsv(population.getMembers().get(i), generation);
+        }
+        return nextCsv;
+    }
+
+    public String writeLionAsCsv(Lion lion, int generation) {
+
+        //Order is Weight, Speed, Strength, Intelligence, Gender, FurColor, Generation
+
+        int weight = (int) lion.weight;
+        int speed = (int) lion.speed;
+        int strength = (int) lion.strength;
+        int intelligence = (int) lion.intelligence;
+
+        String weightStr = String.valueOf(weight);
+        String speedStr = String.valueOf(speed);
+        String strengthStr = String.valueOf(strength);
+        String intelligenceStr = String.valueOf(intelligence);
+        String generationStr = String.valueOf(generation);
+
+        String gender;
+        String furColor;
+
+        switch(lion.gender) {
+            case MALE:
+                gender = "Male";
+                break;
+            case FEMALE:
+                gender = "Female";
+                break;
+            default:
+                gender = "Whatever";
+        }
+
+        switch(lion.furcolor) {
+            case TAWNY:
+                furColor = "Tawny";
+                break;
+            case BLACK:
+                furColor = "Black";
+                break;
+            case BROWN:
+                furColor = "Brown";
+                break;
+            case RED:
+                furColor = "Red";
+                break;
+            default:
+                furColor = "Whatever";
+        }
+
+        String lionString = weightStr + "\t" + speedStr + "\t" + strengthStr + "\t" + intelligenceStr + "\t" +
+                gender + "\t" +furColor + "\t" + generationStr + "\n";
+
+
+        return lionString;
     }
 
     /* Takes in an existing population and generates a new generation */
@@ -239,7 +320,6 @@ public class LionFramework {
     public void heatCooldown() {
         setHeatScore((float) (getHeatScore() * .9));
     }
-
 
     /* Constructor for LionFramework */
     public LionFramework(int maxGenerations, float heatScore, int carryingCapacity,
