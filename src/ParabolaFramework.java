@@ -1,3 +1,6 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -15,15 +18,26 @@ public class ParabolaFramework {
     /* Runs the simulation with the established parameters */
     public static void main(String args[]) {
 
-        Parabola parabola = new Parabola(4, 11, 3);
+        Parabola parabola = new Parabola(1, 4, 4);
+
+        String csvString;
+        csvString = "xvalue\tpgen \n";
 
         ParabolaFramework vertexFinder = new ParabolaFramework(100, 100, 1000, parabola);
         for (int i = 0; i < vertexFinder.getMaxGenerations(); i++) {
+            csvString += vertexFinder.writePopulationAsCsv(vertexFinder.getPopulation(), i);
             vertexFinder.breedPopulation();
         }
-        System.out.print(vertexFinder.findMaxFitness());
-        System.out.print("\n");
-        System.out.print(parabola.evaluateFitness(vertexFinder.findMaxFitness()));
+        String fileName = "vertexfinder.txt";
+
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(fileName));
+            out.write(csvString);
+            out.close();
+        }
+        catch (IOException e) {
+        }
+
     }
 
     /* Takes in an existing population and generates a new generation */
@@ -95,6 +109,24 @@ public class ParabolaFramework {
         setPopulation(generatePopulation((float) 0));
     }
 
+    //Writes a point as a CSV object
+    public String writePopulationAsCsv(Population<Float> population, int generation) {
+
+        String nextCsv = "";
+        for (int i = 0; i < population.getMembers().size(); i++) {
+            nextCsv += writePointAsCsv(population.getMembers().get(i), generation);
+        }
+        return nextCsv;
+    }
+
+    public String writePointAsCsv(float point, int generation) {
+
+        String pointStr = String.valueOf(point);
+        String generationStr = String.valueOf(generation);
+        String dataString = pointStr + "\t" + generationStr + "\n";
+
+        return dataString;
+    }
 
     /*Getter and Setter methods for ParabolaMaxFinder*/
 

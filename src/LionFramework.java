@@ -1,8 +1,7 @@
-import com.sun.tools.doclint.Env;
-
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Random;
 
 /**
